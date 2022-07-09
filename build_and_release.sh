@@ -18,16 +18,22 @@ platforms=(
   windows-arm64
 )
 
+echo "START 1"
+
 if [[ $GITHUB_REF = refs/tags/* ]]; then
   tag="${GITHUB_REF#refs/tags/}"
 else
   tag="$(git describe --tags --abbrev=0)"
 fi
 
+echo "START 2"
+
 prerelease=""
 if [[ $tag = *-* ]]; then
   prerelease="--prerelease"
 fi
+
+echo "START 3"
 
 if [ -n "$GH_EXT_BUILD_SCRIPT" ]; then
   echo "invoking build script override $GH_EXT_BUILD_SCRIPT"
@@ -50,6 +56,8 @@ else
   done
 fi
 
+echo "START 4"
+
 assets=()
 for f in dist/*; do
   if [ -f "$f" ]; then
@@ -57,10 +65,14 @@ for f in dist/*; do
   fi
 done
 
+echo "START 5"
+
 if [ "${#assets[@]}" -eq 0 ]; then
   echo "error: no files found in dist/*" >&2
   exit 1
 fi
+
+echo "START 6"
 
 if [ -n "$GPG_FINGERPRINT" ]; then
   shasum -a 256 "${assets[@]}" > checksums.txt
@@ -68,7 +80,11 @@ if [ -n "$GPG_FINGERPRINT" ]; then
   assets+=(checksums.txt checksums.txt.sig)
 fi
 
+echo "START 7"
+
 if ! gh release create "$tag" $prerelease --title="${GITHUB_REPOSITORY#*/} ${tag#v}" --generate-notes -- "${assets[@]}"; then
   echo "trying to upload assets to an existing release instead..."
   gh release upload "$tag" --clobber -- "${assets[@]}"
 fi
+
+echo "START 8"
